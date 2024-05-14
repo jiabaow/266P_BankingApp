@@ -1,4 +1,4 @@
-import { open } from 'sqlite';
+import {open} from 'sqlite';
 import sqlite3 from 'sqlite3';
 
 let db;
@@ -45,5 +45,22 @@ export async function createAccount(username, password, balance = 0) {
     } catch (error) {
         console.error(`Error occurred while creating account: ${error.message}`);
         throw error; // Rethrow the error to handle it in the calling function or middleware
+    }
+}
+
+export async function getAccounts(username) {
+    try {
+        // Open the database
+        const db = await openDatabase();
+
+        // Query the database to get the account
+        return await db.get(`
+            SELECT *
+            FROM accounts
+            WHERE username = ?
+        `, [username]);
+    } catch (error) {
+        console.error(`Error occurred while retrieving account: ${error.message}`);
+        throw error;
     }
 }

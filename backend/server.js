@@ -1,13 +1,24 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createAccount } from './database.js';
+import { createAccount, getAccounts } from './database.js';
+import cors from 'cors';
 
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send('Send homepage');
+});
+
+// gets all the accounts
+app.get('/accounts', async (req, res) => {
+    const accounts = await getAccounts();
+    if (accounts == null) {
+        res.status(404).json({ message: 'No accounts found' });
+    }
+    res.status(200).json(accounts);
 });
 
 app.post('/account', async (req, res) => {
