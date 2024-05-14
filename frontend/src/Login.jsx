@@ -21,7 +21,7 @@ export const Login = (props) => {
             return;
         }
 
-        Axios.post("http://localhost:8080/account/login", {
+        Axios.post("http://localhost:3000/account/login", {
             "username": username,
             "password": password
         }).then((res) => {
@@ -51,7 +51,7 @@ export const Login = (props) => {
                     className="login__input login__input--user"
                     name="username"
                     id="username"
-                />          
+                />
                 <label htmlFor="password">Password</label>
                 <input
                     value = {password}

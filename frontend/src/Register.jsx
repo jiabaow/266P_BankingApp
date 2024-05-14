@@ -27,17 +27,18 @@ export const Register = (props) => {
             return;
         }
 
-        if(password == confirmPassword){
-            Axios.post("http://localhost:8080/account", {
+        if(password === confirmPassword){
+            Axios.post("http://localhost:3000/account", {
                 "username": username,
                 "password": password,
                 "balance": amount
             }).then((res) => {
-                console.log(res);
+                console.log("password" + res);
                 setAuthenticated(true)
                 localStorage.setItem("authenticated", true);
                 navigate("/dashboard", {"state": {"username": username, "token": res.data.access_token}});
             }).catch((error) => {
+                console.error('Error response:', error);
                 alert(error.response.data.message);
             })
         } else {
@@ -58,7 +59,7 @@ export const Register = (props) => {
                     className="login__input login__input--user"
                     name="username"
                     id="username"
-                />          
+                />
                 <label htmlFor="password">Password</label>
                 <input
                     value = {password}

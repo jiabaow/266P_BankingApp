@@ -28,11 +28,11 @@ const Dashboard = () => {
         setUsername(location.state.username)
         setAccessToken(location.state.token)
 
-        Axios.post('http://localhost:8080/account/transactions', { 
-            "user": location.state.username 
+        Axios.post('http://localhost:3000/account/transactions', {
+            "user": location.state.username
         }, {
             headers: {
-                'Authorization': `Basic ${location.state.token}` 
+                'Authorization': `Basic ${location.state.token}`
             }
         })
         .then(res => {
@@ -51,11 +51,11 @@ const Dashboard = () => {
             return ()=>{};
         }
 
-        Axios.post('http://localhost:8080/account/balance', { 
-            "user": location.state.username 
+        Axios.post('http://localhost:3000/account/balance', {
+            "user": location.state.username
         }, {
             headers: {
-                'Authorization': `Basic ${location.state.token}` 
+                'Authorization': `Basic ${location.state.token}`
             }
         })
         .then(res => {
@@ -65,7 +65,7 @@ const Dashboard = () => {
             console.error(error);
             setAuthenticated(false);
         });
-    }, [reloadDashboard]); 
+    }, [reloadDashboard]);
 
     // Helper functions for UI events
     const handleLogout = (e) => {
@@ -99,17 +99,17 @@ const Dashboard = () => {
             return;
         }
 
-        Axios.post("http://localhost:8080/account/login", {
+        Axios.post("http://localhost:3000/account/login", {
             "username": location.state.username,
             "password": confirmPassword
         }).then((res) => {
             if(deposit != 0){ // checks if we are despositing
-                Axios.post('http://localhost:8080/account/deposit', { 
-                    "user": location.state.username, 
+                Axios.post('http://localhost:3000/account/deposit', {
+                    "user": location.state.username,
                     "amount": deposit
                 }, {
                     headers: {
-                        'Authorization': `Basic ${location.state.token}` 
+                        'Authorization': `Basic ${location.state.token}`
                     }
                 })
                 .then(res => {
@@ -125,12 +125,12 @@ const Dashboard = () => {
                     console.error(error);
                 });
             } else { // else we are withdrawing
-                Axios.post('http://localhost:8080/account/withdraw', { 
-                    "user": location.state.username, 
+                Axios.post('http://localhost:3000/account/withdraw', {
+                    "user": location.state.username,
                     "amount": withdrawal
                 }, {
                     headers: {
-                        'Authorization': `Basic ${location.state.token}` 
+                        'Authorization': `Basic ${location.state.token}`
                     }
                 })
                 .then(res => {
@@ -190,7 +190,7 @@ const Dashboard = () => {
                 <img src={logo} alt="Logo" className="logo" />
                 <button className="logout__button" onClick={handleLogout}>Logout</button>
             </nav>
-    
+
             <main className="app">
                 {/* <!-- BALANCE --> */}
                 <div className="balance">
@@ -202,7 +202,7 @@ const Dashboard = () => {
                 </div>
                 <p className="balance__value">${balance}</p>
                 </div>
-        
+
                 {/* <!-- MOVEMENTS --> */}
                 <div className="movements">
                 {
@@ -227,7 +227,7 @@ const Dashboard = () => {
                     }): <div className="movements__row"><p className="error__message">No recent transactions found</p></div>
                 }
                 </div>
-        
+
                 {/* <!-- OPERATION: DEPOSIT --> */}
                 <div className="operation operation--deposit">
                     <h2>Deposit Money</h2>
@@ -247,7 +247,7 @@ const Dashboard = () => {
                         <label className="form__label">Amount</label>
                     </form>
                 </div>
-                
+
                 {/* <!-- CONFIRM PASSWORD: MODAL --> */}
                 { showModal && <div className="overlay"><div className="modalContainer operation operation--confirm">
                     <h2>Confirm Password</h2>
@@ -263,7 +263,7 @@ const Dashboard = () => {
                         <label className="form__label">Password</label>
                     </form>
                 </div></div> }
-        
+
             </main>
         </div>
     );
