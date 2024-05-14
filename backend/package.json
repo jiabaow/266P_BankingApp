@@ -1,9 +1,10 @@
 {
   "name": "bank_app",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./server.js",
+  "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "dev": "npx nodemon ./server.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

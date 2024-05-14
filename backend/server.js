@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createAccount } from './database';
+import { createAccount } from './database.js';
 
 const app = express();
 
