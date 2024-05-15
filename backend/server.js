@@ -30,8 +30,10 @@ app.post('/account', async (req, res) => {
             password: hashedPwd,
         }
         const newUser = await createAccount(user.username, user.password)
+        console.log("created new user", newUser)
         res.status(200).json(newUser);
     } catch (err) {
+        console.log("create user failed", err)
         res.status(500).json(err);
     }
 });
