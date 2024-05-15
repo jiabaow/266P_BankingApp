@@ -47,11 +47,7 @@ export async function createAccount(username, password, balance = 0) {
             VALUES (?, ?, ?);
         `, [username, password, balance]);
 
-        // Get the ID of the inserted account
-        const accountId = result.lastID;
-
-        // Return the ID of the inserted account
-        return accountId;
+        return result.lastID;
     } catch (error) {
         console.error(`Error occurred while creating account: ${error.message}`);
         throw error; // Rethrow the error to handle it in the calling function or middleware
@@ -107,12 +103,46 @@ export async function getTransactions(account_id) {
             FROM transactions
             WHERE account_id = ?
         `;
-        const rows = await db.all(query, [account_id]);
-
-        // Return the rows
-        return rows;
+        return await db.all(query, [account_id]);
     } catch (error) {
         console.error(`Error occurred while fetching transactions: ${error.message}`);
         throw error;
+    }
+}
+
+export async function createTransaction(accountId, amount) {
+    try {
+        const db = await openDatabase();
+
+        // Insert a new transaction into the transactions table
+        await db.run(`
+            INSERT INTO transactions (account_id, amount)
+            VALUES (?, ?);
+        `, [accountId, amount]);
+
+        // Return success
+        return true;
+    } catch (error) {
+        console.error(`Error occurred while creating transaction: ${error.message}`);
+        throw error; // rethrow the error to handle it in the calling function or middleware
+    }
+}
+
+export async function updateBalance(username, amount) {
+    try {
+        const db = await openDatabase();
+
+        // Update the balance in the accounts table
+        await db.run(`
+            UPDATE accounts
+            SET balance = ?
+            WHERE username = ?
+        `, [amount, username]);
+
+        // Return success
+        return true;
+    } catch (error) {
+        console.error(`Error occurred while updating balance: ${error.message}`);
+        throw error; // rethrow the error to handle it in the calling function or middleware
     }
 }

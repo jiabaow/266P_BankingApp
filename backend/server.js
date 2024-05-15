@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createAccount, getAccounts, getAccount, getTransactions } from './database.js';
+import { createAccount, getAccounts, getAccount, getTransactions, updateBalance, createTransaction } from './database.js';
 import cors from 'cors';
 
 const app = express();
@@ -63,7 +63,7 @@ app.post('/account/transactions', async(req, res) => {
     const username = req.body.user;
     const account = await getAccount(username);
     if (account == null) res.status(400).json({ message: 'Account does not exist' });
-    const account_id = account.account_id;
+    const account_id = account.id;
     const transactions = await getTransactions(account_id);
     if (transactions == null) res.status(400).json({ message: 'No available transaction' });
     res.status(200).json(transactions);
@@ -77,6 +77,36 @@ app.post('/account/balance', async(req, res) => {
     console.log(account);
     const currBalance = account.balance;
     res.status(201).json({message: `Your balance is ${currBalance}`, balance: currBalance})
+});
+
+app.post('/account/deposit', async(req, res) => {
+    console.log("deposit req:", req)
+
+    const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
+    const numberInput = req.body.amount;
+
+    // Check if input is valid
+    if (!validNumberFormat.test(numberInput)) {
+        return res.status(400).json({ message: 'Invalid number format' });
+    }
+
+    const username = req.body.user;
+    const amount = Number(numberInput);
+    const account = await getAccount(username);
+    if (account == null) res.status(400).json({ message: 'Account does not exist' });
+    console.log("account: ", account)
+
+    const account_id = account.id;
+    // balance is decimal(10, 2)
+    const oldBalance = Number(account.balance);
+    const newBalance = oldBalance + amount;
+
+    // update balance for user
+    await updateBalance(username, newBalance);
+
+    // create deposit transaction
+    await createTransaction(account_id, amount);
+    res.status(201).json({ message: 'Deposit successful' });
 });
 
 app.use((err, req, res) => {
