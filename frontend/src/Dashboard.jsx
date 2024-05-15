@@ -30,10 +30,6 @@ const Dashboard = () => {
 
         Axios.post('http://localhost:3000/account/transactions', {
             "user": location.state.username
-        }, {
-            headers: {
-                'Authorization': `Basic ${location.state.token}`
-            }
         })
         .then(res => {
             setTransactions(res.data);
@@ -53,10 +49,6 @@ const Dashboard = () => {
 
         Axios.post('http://localhost:3000/account/balance', {
             "user": location.state.username
-        }, {
-            headers: {
-                'Authorization': `Basic ${location.state.token}`
-            }
         })
         .then(res => {
             setBalance(res.data.balance);

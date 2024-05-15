@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createAccount, getAccounts } from './database.js';
+import { createAccount, getAccounts, getAccount, getTransactions } from './database.js';
 import cors from 'cors';
 
 const app = express();
@@ -36,6 +36,26 @@ app.post('/account', async (req, res) => {
         console.log("create user failed", err)
         res.status(500).json(err);
     }
+});
+
+app.post('/account/transactions', async(req, res) => {
+    const username = req.body.user;
+    const account = await getAccount(username);
+    if (account == null) res.status(400).json({ message: 'Account does not exist' });
+    const account_id = account.account_id;
+    const transactions = await getTransactions(account_id);
+    if (transactions == null) res.status(400).json({ message: 'No available transaction' });
+    res.status(200).json(transactions);
+});
+
+app.post('/account/balance', async(req, res) => {
+    // Your protected route logic here
+    const username = req.body.user;
+    const account = await getAccount(username);
+    if (account == null) res.status(400).json({ message: 'Account does not exist' });
+    console.log(account);
+    const currBalance = account.balance;
+    res.status(201).json({message: `Your balance is ${currBalance}`, balance: currBalance})
 });
 
 app.use((err, req, res, next) => {

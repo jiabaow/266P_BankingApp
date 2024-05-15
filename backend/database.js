@@ -20,6 +20,16 @@ async function openDatabase() {
                 balance INTEGER DEFAULT 0
             )
         `);
+
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                account_id INTEGER NOT NULL,
+                amount DECIMAL(10, 2) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (account_id) REFERENCES accounts(id)
+            )
+        `);
     }
 
     return db;
@@ -61,6 +71,48 @@ export async function getAccounts(username) {
         `, [username]);
     } catch (error) {
         console.error(`Error occurred while retrieving account: ${error.message}`);
+        throw error;
+    }
+}
+
+export async function getAccount(username) {
+    try {
+        // Open the database
+        const db = await openDatabase();
+
+        // Execute the SELECT query
+        const query = `
+            SELECT *
+            FROM accounts
+            WHERE username = ?
+        `;
+        const [row] = await db.all(query, [username]);
+
+        // Return the first row (or null if no account found)
+        return row || null;
+    } catch (error) {
+        console.error(`Error occurred while getting account: ${error.message}`);
+        throw error;
+    }
+}
+
+export async function getTransactions(account_id) {
+    try {
+        // Open the database
+        const db = await openDatabase();
+
+        // Execute the SELECT query
+        const query = `
+            SELECT *
+            FROM transactions
+            WHERE account_id = ?
+        `;
+        const rows = await db.all(query, [account_id]);
+
+        // Return the rows
+        return rows;
+    } catch (error) {
+        console.error(`Error occurred while fetching transactions: ${error.message}`);
         throw error;
     }
 }
