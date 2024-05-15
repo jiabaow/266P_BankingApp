@@ -38,6 +38,27 @@ app.post('/account', async (req, res) => {
     }
 });
 
+app.post('/account/login', async (req, res) => {
+    const user = await getAccount(req.body.username);
+
+    if(user == null){
+        res.status(401).json({ message: 'Invalid password or username' });
+    }
+
+    try {
+        if(await bcrypt.compare(req.body.password, user.password)){
+            // const payload = { username };
+            // const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '5min' });
+            //res.status(200).json({ message : 'Login successful', access_token: token, expires_in: 300 });
+            res.status(200).json({ message : 'Login successful', expires_in: 300 });
+        } else {
+            res.status(401).json({ message: 'Invalid password or username' });
+        }
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
 app.post('/account/transactions', async(req, res) => {
     const username = req.body.user;
     const account = await getAccount(username);
@@ -58,7 +79,7 @@ app.post('/account/balance', async(req, res) => {
     res.status(201).json({message: `Your balance is ${currBalance}`, balance: currBalance})
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     console.log(err.stack);
     res.status(500).json({ message: err.message });
 })
