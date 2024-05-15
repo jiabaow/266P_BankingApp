@@ -109,6 +109,37 @@ app.post('/account/deposit', async(req, res) => {
     res.status(201).json({ message: 'Deposit successful' });
 });
 
+app.post('/account/withdraw', async(req, res) => {
+    // validate amount
+    const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
+    const numberInput = req.body.amount;
+
+    // Check if input is valid
+    if (!validNumberFormat.test(numberInput)) {
+        return res.status(400).json({ message: 'Invalid number format' });
+    }
+
+    const username = req.body.user;
+    const amount = Number(numberInput);
+    const account = await getAccount(username);
+    if (account == null) res.status(400).json({ message: 'Account does not exist' });
+
+    const account_id = account.id;
+    const oldBalance = Number(account.balance);
+    const newBalance = oldBalance - amount;
+
+    if (newBalance < 0) {
+        res.status(400).json({ message: 'Insufficient funds' });
+    } else {
+        // update balance for user
+        await updateBalance(username, newBalance);
+
+        // create withdraw transaction
+        await createTransaction(account_id, -amount);
+        res.status(201).json({ message: 'Withdraw successful' });
+    }
+});
+
 app.use((err, req, res) => {
     console.log(err.stack);
     res.status(500).json({ message: err.message });
