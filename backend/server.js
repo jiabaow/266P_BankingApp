@@ -76,7 +76,6 @@ app.post('/account/transactions', async(req, res) => {
 });
 
 app.post('/account/balance', async(req, res) => {
-    // Your protected route logic here
     const username = req.body.user;
     const account = await getAccount(username);
     if (account == null) res.status(400).json({ message: 'Account does not exist' });
@@ -91,7 +90,6 @@ app.post('/account/deposit', async(req, res) => {
     const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
     const numberInput = req.body.amount;
 
-    // Check if input is valid
     if (!validNumberFormat.test(numberInput)) {
         return res.status(400).json({ message: 'Invalid number format' });
     }
@@ -103,24 +101,19 @@ app.post('/account/deposit', async(req, res) => {
     console.log("account: ", account)
 
     const account_id = account.id;
-    // balance is decimal(10, 2)
     const oldBalance = Number(account.balance);
     const newBalance = oldBalance + amount;
 
-    // update balance for user
     await updateBalance(username, newBalance);
 
-    // create deposit transaction
     await createTransaction(account_id, amount);
     res.status(201).json({ message: 'Deposit successful' });
 });
 
 app.post('/account/withdraw', async(req, res) => {
-    // validate amount
     const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
     const numberInput = req.body.amount;
 
-    // Check if input is valid
     if (!validNumberFormat.test(numberInput)) {
         return res.status(400).json({ message: 'Invalid number format' });
     }
@@ -137,10 +130,8 @@ app.post('/account/withdraw', async(req, res) => {
     if (newBalance < 0) {
         res.status(400).json({ message: 'Insufficient funds' });
     } else {
-        // update balance for user
         await updateBalance(username, newBalance);
 
-        // create withdraw transaction
         await createTransaction(account_id, -amount);
         res.status(201).json({ message: 'Withdraw successful' });
     }

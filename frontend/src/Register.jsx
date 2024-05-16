@@ -66,7 +66,7 @@ export const Register = (props) => {
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
                     placeholder="********"
-                    maxlength="127"
+                    maxLength="127"
                     className="login__input login__input--password"
                     name="password"
                     id="password"
@@ -77,7 +77,7 @@ export const Register = (props) => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     type="password"
                     placeholder="********"
-                    maxlength="127"
+                    maxLength="127"
                     className="login__input login__input--password"
                     name="password"
                     is="password"

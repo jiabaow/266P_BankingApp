@@ -95,7 +95,7 @@ const Dashboard = () => {
             "username": location.state.username,
             "password": confirmPassword
         }).then((res) => {
-            if(deposit != 0){ // checks if we are despositing
+            if(deposit !== 0){ // checks if we are despositing
                 Axios.post('http://localhost:3003/account/deposit', {
                     "user": location.state.username,
                     "amount": deposit
@@ -111,7 +111,7 @@ const Dashboard = () => {
                     setConfirmPassword("");
                 })
                 .catch(error => {
-                    if(error.response.status == 400){
+                    if(error.response.status === 400){
                         alert(error.response.data.message)
                     }
                     console.error(error);
@@ -132,14 +132,14 @@ const Dashboard = () => {
                     setConfirmPassword("");
                 })
                 .catch(error => {
-                    if(error.response.status == 400){
+                    if(error.response.status === 400){
                         alert(error.response.data.message + ". Please withdraw less or deposit more money into account first.")
                     }
                     console.error(error);
                 });
             }
         }).catch((e) => {
-            if(e.response.status == 401){
+            if(e.response.status === 401){
                 alert(e.response.data.message);
                 console.log(e.response.data);
             }
