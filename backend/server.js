@@ -24,14 +24,20 @@ app.get('/accounts', async (req, res) => {
 app.post('/account', async (req, res) => {
     try {
         console.log("server /account", req.body);
-        const hashedPwd = await bcrypt.hash(req.body.password, 10);
-        const user = {
-            username: req.body.username,
-            password: hashedPwd,
+        const account = await getAccount(req.body.username);
+        if (account == null) {
+            const hashedPwd = await bcrypt.hash(req.body.password, 10);
+            const user = {
+                username: req.body.username,
+                password: hashedPwd,
+            }
+            const newUser = await createAccount(user.username, user.password)
+            console.log("created new user", newUser)
+            res.status(200).json(newUser);
         }
-        const newUser = await createAccount(user.username, user.password)
-        console.log("created new user", newUser)
-        res.status(200).json(newUser);
+        else {
+            res.status(401).json({ message: 'Username already exits!' });
+        }
     } catch (err) {
         console.log("create user failed", err)
         res.status(500).json(err);
