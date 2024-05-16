@@ -28,7 +28,7 @@ const Dashboard = () => {
         setUsername(location.state.username)
         setAccessToken(location.state.token)
 
-        Axios.post('http://localhost:3000/account/transactions', {
+        Axios.post('http://localhost:3003/account/transactions', {
             "user": location.state.username
         })
         .then(res => {
@@ -47,7 +47,7 @@ const Dashboard = () => {
             return ()=>{};
         }
 
-        Axios.post('http://localhost:3000/account/balance', {
+        Axios.post('http://localhost:3003/account/balance', {
             "user": location.state.username
         })
         .then(res => {
@@ -91,12 +91,12 @@ const Dashboard = () => {
             return;
         }
 
-        Axios.post("http://localhost:3000/account/login", {
+        Axios.post("http://localhost:3003/account/login", {
             "username": location.state.username,
             "password": confirmPassword
         }).then((res) => {
             if(deposit != 0){ // checks if we are despositing
-                Axios.post('http://localhost:3000/account/deposit', {
+                Axios.post('http://localhost:3003/account/deposit', {
                     "user": location.state.username,
                     "amount": deposit
                 }, {
@@ -117,7 +117,7 @@ const Dashboard = () => {
                     console.error(error);
                 });
             } else { // else we are withdrawing
-                Axios.post('http://localhost:3000/account/withdraw', {
+                Axios.post('http://localhost:3003/account/withdraw', {
                     "user": location.state.username,
                     "amount": withdrawal
                 }, {

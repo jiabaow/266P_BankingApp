@@ -28,7 +28,7 @@ export const Register = (props) => {
         }
 
         if(password === confirmPassword){
-            Axios.post("http://localhost:3000/account", {
+            Axios.post("http://localhost:3003/account", {
                 "username": username,
                 "password": password,
                 "balance": amount
