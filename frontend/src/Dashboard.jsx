@@ -95,7 +95,7 @@ const Dashboard = () => {
             "username": location.state.username,
             "password": confirmPassword
         }).then((res) => {
-            if(deposit !== 0){ // checks if we are despositing
+            if(deposit !== 0){ // checks if we are depositing
                 Axios.post('http://localhost:3003/account/deposit', {
                     "user": location.state.username,
                     "amount": deposit
@@ -150,7 +150,7 @@ const Dashboard = () => {
         e.preventDefault();
 
         if(!validateInput(deposit)){
-            alert("Your value " + deposit + " was invalid. Please enter a valid amount to depost.")
+            alert("Your value " + deposit + " was invalid. Please enter a valid amount to deposit.")
             return;
         }
 
@@ -168,9 +168,6 @@ const Dashboard = () => {
         setShowModal(true);
     }
 
-    // UI displayed to the user
-
-    // checks to make sure user is authenticated
     if(!authenticated){
         return <Navigate replace to="/" />;
     }
