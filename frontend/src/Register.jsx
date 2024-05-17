@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Axios from 'axios';
-import logo from './logo.png';
+import logo from './anteater.png';
 import { useNavigate } from "react-router-dom";
 
 export const Register = (props) => {

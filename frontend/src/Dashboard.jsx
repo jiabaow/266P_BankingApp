@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Axios from 'axios';
-import logo from './logo.png';
+import logo from './anteater.png';
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
