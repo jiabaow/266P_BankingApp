@@ -38,7 +38,11 @@ export const Login = (props) => {
 
     return (
         <div className="auth-form-container">
-            <img src={logo}className="logo" />
+            <div className="logo-container">
+                <img src={logo} className="logo" alt="Logo" />
+                <h2 className="bank-title" style={{ color: 'var(--primary-color)' }}>Anteater Bank</h2>
+            </div>
+            {/* <img src={logo}className="logo" /> */}
             <form className="login-form" onSubmit={handleSubmit}>
                 <label htmlFor="username">Username</label>
                 <input

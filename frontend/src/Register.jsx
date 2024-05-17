@@ -48,7 +48,11 @@ export const Register = (props) => {
 
     return (
         <div className="auth-form-container">
-            <img src={logo} className="logo" />
+            <div className="logo-container">
+                <img src={logo} className="logo" alt="Logo" />
+                <h2 className="bank-title" style={{ color: 'var(--primary-color)' }}>Anteater Bank</h2>
+            </div>
+            {/* <img src={logo} className="logo" /> */}
             <form className="register-form" onSubmit={handleSubmit} /*method="post"*/>
                 <label htmlFor="username">Username</label>
                 <input
