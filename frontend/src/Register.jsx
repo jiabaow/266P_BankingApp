@@ -36,7 +36,7 @@ export const Register = (props) => {
                 console.log("password" + res);
                 setAuthenticated(true)
                 localStorage.setItem("authenticated", true);
-                navigate("/dashboard", {"state": {"username": username, "token": res.data.access_token}});
+                navigate("/dashboard", {"state": {"username": username }});
             }).catch((error) => {
                 console.error('Error response:', error);
                 alert(error.response.data.message);

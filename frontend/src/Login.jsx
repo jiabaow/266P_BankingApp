@@ -27,7 +27,7 @@ export const Login = (props) => {
         }).then((res) => {
             setAuthenticated(true)
             localStorage.setItem("authenticated", true);
-            navigate("/dashboard", {"state": {"username": username, "token": res.data.access_token}});
+            navigate("/dashboard", {"state": {"username": username}});
         }).catch((e) => {
             if(e.response.status === 401){
                 alert(e.response.data.message);

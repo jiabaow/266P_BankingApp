@@ -6,7 +6,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 const Dashboard = () => {
     const [username, setUsername] = useState(null);
     const [confirmPassword, setConfirmPassword] = useState(null);
-    const [accessToken, setAccessToken] = useState(null);
+    // const [accessToken, setAccessToken] = useState(null);
     const [authenticated, setAuthenticated] = useState(localStorage.getItem("authenticated"));
     const [transactions, setTransactions] = useState([]);
     const [balance, setBalance] = useState(0);
@@ -26,7 +26,7 @@ const Dashboard = () => {
         }
 
         setUsername(location.state.username)
-        setAccessToken(location.state.token)
+        // setAccessToken(location.state.token)
 
         Axios.post('http://localhost:3003/account/transactions', {
             "user": location.state.username
@@ -99,10 +99,6 @@ const Dashboard = () => {
                 Axios.post('http://localhost:3003/account/deposit', {
                     "user": location.state.username,
                     "amount": deposit
-                }, {
-                    headers: {
-                        'Authorization': `Basic ${location.state.token}`
-                    }
                 })
                 .then(res => {
                     setReloadDashboard(!reloadDashboard);
@@ -120,10 +116,6 @@ const Dashboard = () => {
                 Axios.post('http://localhost:3003/account/withdraw', {
                     "user": location.state.username,
                     "amount": withdrawal
-                }, {
-                    headers: {
-                        'Authorization': `Basic ${location.state.token}`
-                    }
                 })
                 .then(res => {
                     setReloadDashboard(!reloadDashboard);
