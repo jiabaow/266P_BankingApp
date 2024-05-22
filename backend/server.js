@@ -1,6 +1,6 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createAccount, getAccounts, getAccount, getTransactions, updateBalance, createTransaction } from './database.js';
+import { createAccount, getAccounts, getAccount, getTransactions, updateBalance, createTransaction, getTransaction } from './database.js';
 import cors from 'cors';
 
 const app = express();
@@ -73,6 +73,23 @@ app.post('/account/transactions', async(req, res) => {
     const transactions = await getTransactions(account_id);
     if (transactions == null) res.status(400).json({ message: 'No available transaction' });
     res.status(200).json(transactions);
+});
+
+app.get('/account/transaction', async (req, res) => {
+    try {
+        const username = req.body.user;
+        const account = await getAccount(username);
+        if (account == null) res.status(400).json({ message: 'Account does not exist' });
+        const account_id = account.id;
+        const created_at = req.body.createdAt;
+
+        const transactions = await getTransaction(account_id, created_at);
+
+        res.status(200).json(transactions);
+    } catch (error) {
+        console.error('Error during fetching transaction:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
 app.post('/account/balance', async(req, res) => {

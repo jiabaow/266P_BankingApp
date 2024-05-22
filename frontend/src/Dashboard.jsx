@@ -14,6 +14,8 @@ const Dashboard = () => {
     const [withdrawal, setWithdrawal] = useState(0);
     const [reloadDashboard, setReloadDashboard] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filteredTransactions, setFilteredTransactions] = useState([]);
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -33,6 +35,7 @@ const Dashboard = () => {
         })
         .then(res => {
             setTransactions(res.data);
+            setFilteredTransactions(res.data)
         })
         .catch(error => {
             console.error(error);
@@ -160,6 +163,23 @@ const Dashboard = () => {
         setShowModal(true);
     }
 
+    const filterTransactions = (query) => {
+        const lowercasedQuery = query.toLowerCase();
+        const filtered = transactions.filter(transaction => {
+            const date = formatDate(transaction.created_at);
+            const amount = transaction.amount.toString();
+            const type = transaction.amount > 0 ? 'Deposit' : 'Withdrawal';
+            return date.includes(lowercasedQuery) || amount.includes(lowercasedQuery) || type.toLowerCase().includes(lowercasedQuery);
+        });
+        setFilteredTransactions(filtered);
+    }
+
+    const handleSearchChange = (e) => {
+        console.log("handleSearchChange", e);
+        setSearchQuery(e.target.value);
+        filterTransactions(e.target.value);
+    }
+
     if(!authenticated){
         return <Navigate replace to="/" />;
     }
@@ -184,10 +204,21 @@ const Dashboard = () => {
                 <p className="balance__value">${balance}</p>
                 </div>
 
+                {/* <!-- SEARCH --> */}
+                <div className="search">
+                    <input
+                        type="text"
+                        placeholder="Search mm/dd/yyyy"
+                        value={searchQuery}
+                        onChange={handleSearchChange}
+                        className="search__input"
+                    />
+                </div>
+
                 {/* <!-- MOVEMENTS --> */}
                 <div className="movements">
                 {
-                    transactions.length > 0 ? transactions.map(transaction => {
+                    filteredTransactions.length > 0 ? filteredTransactions.map(transaction => {
                         if(transaction.amount > 0){
                             return (
                                 <div key={transaction.id} className="movements__row">
