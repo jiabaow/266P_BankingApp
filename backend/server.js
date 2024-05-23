@@ -70,7 +70,6 @@ app.post('/account/transactions', async(req, res) => {
     const account_id = account.id;
     const transactions = await getTransactions(account_id);
     if (transactions == null) res.status(400).json({ message: 'No available transaction' });
-    // console.log("all transactions ", transactions);
     res.status(200).json(transactions);
 });
 

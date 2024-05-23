@@ -45,7 +45,7 @@ export async function createAccount(username, password, balance = 0) {
         return result.lastID;
     } catch (error) {
         console.error(`Error occurred while creating account: ${error.message}`);
-        throw error; // Rethrow the error to handle it in the calling function or middleware
+        throw error;
     }
 }
 
@@ -110,7 +110,7 @@ export async function createTransaction(accountId, amount) {
         return true;
     } catch (error) {
         console.error(`Error occurred while creating transaction: ${error.message}`);
-        throw error; // rethrow the error to handle it in the calling function or middleware
+        throw error;
     }
 }
 
@@ -127,6 +127,6 @@ export async function updateBalance(username, amount) {
         return true;
     } catch (error) {
         console.error(`Error occurred while updating balance: ${error.message}`);
-        throw error; // rethrow the error to handle it in the calling function or middleware
+        throw error;
     }
 }
