@@ -8,14 +8,13 @@
 - Deposit money
 - Withdraw money
 - Check account balance
+- Search transaction
 
 ## Prerequisites
 
 Before running and building the project, ensure you have the following software installed:
 
 - [Node.js](https://nodejs.org/) (includes npm)
-- [Java Development Kit (JDK) 8+](https://www.oracle.com/java/technologies/javase-downloads.html)
-- [Maven](https://maven.apache.org/)
 
 ## Clone the Project
 
@@ -39,12 +38,3 @@ cd frontend/
 npm run
 npm start
 ```
-
-## Contributing
-If you would like to contribute to this project, please follow these steps:
-
-1. Fork this repository
-2. Create a new branch (git checkout -b feature/your-feature)
-3. Commit your changes (git commit -am 'Add some feature')
-4. Push to the branch (git push origin feature/your-feature)
-5. Create a new Pull Request
