@@ -20,10 +20,9 @@ const Dashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // gets initial list of transactions and is updated anytime a transaction is made
     useEffect(() => {
         if(location.state === null || location.state.username === null || location.state.token === null){
-            navigate("/")
+            navigate("/");
             return ()=>{};
         }
 
@@ -208,7 +207,7 @@ const Dashboard = () => {
                 <div className="search">
                     <input
                         type="text"
-                        placeholder="Search mm/dd/yyyy"
+                        placeholder="Search transactions"
                         value={searchQuery}
                         onChange={handleSearchChange}
                         className="search__input"
