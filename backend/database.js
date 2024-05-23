@@ -98,22 +98,6 @@ export async function getTransactions(account_id) {
     }
 }
 
-export async function getTransaction(account_id, created_at){
-    try {
-        const db = await openDatabase();
-
-        const query = `
-            SELECT *
-            FROM transactions
-            WHERE account_id = ? AND created_at = ?
-        `;
-        return await db.all(query, [account_id, created_at]);
-    } catch (error) {
-        console.error(`Error occurred while fetching transaction: ${error.message}`);
-        throw error;
-    }
-}
-
 export async function createTransaction(accountId, amount) {
     try {
         const db = await openDatabase();
