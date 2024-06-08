@@ -25,8 +25,10 @@ export const Login = (props) => {
             "username": username,
             "password": password
         }).then((res) => {
+            const token = res.data.token;
             setAuthenticated(true)
             localStorage.setItem("authenticated", true);
+            localStorage.setItem("token", token); 
             navigate("/dashboard", {"state": {"username": username}});
         }).catch((e) => {
             if(e.response.status === 401){

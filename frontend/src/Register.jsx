@@ -8,7 +8,7 @@ export const Register = (props) => {
     const [password, setPassword] = useState("");
     const [amount, setAmount] = useState(0);
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [authenticated, setAuthenticated] = useState(localStorage.getItem(localStorage.getItem("authenticated")|| false));
+    const [authenticated, setAuthenticated] = useState(localStorage.getItem("authenticated") || false);
     const navigate = useNavigate();
 
     const validateInput = (string) => {
@@ -22,27 +22,35 @@ export const Register = (props) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if(!(validateInput(username) && validateInput(password) && validateAmountInput(amount))){
+        if (!(validateInput(username) && validateInput(password) && validateAmountInput(amount))) {
             alert("The username or password entered is invalid. Please make sure they contain lowercase letters, digits, or one of these special characters['_', '-', '.'] as well as between 1 and 127 characters.");
             return;
         }
 
-        if(password === confirmPassword){
+        if (password === confirmPassword) {
             Axios.post("http://localhost:3003/account", {
                 "username": username,
                 "password": password,
                 "balance": amount
             }).then((res) => {
-                console.log("password" + res);
-                setAuthenticated(true)
+                console.log("Account created", res);
+
+                return Axios.post("http://localhost:3003/account/login", {
+                    "username": username,
+                    "password": password
+                });
+            }).then((res) => {
+                const token = res.data.token;
+                setAuthenticated(true);
                 localStorage.setItem("authenticated", true);
-                navigate("/dashboard", {"state": {"username": username }});
+                localStorage.setItem("token", token);  
+                navigate("/dashboard", { state: { "username": username } });
             }).catch((error) => {
                 console.error('Error response:', error);
                 alert(error.response.data.message);
-            })
+            });
         } else {
-            alert("Something went wrong with the username or password");
+            alert("Passwords do not match");
         }
     }
 
@@ -52,11 +60,10 @@ export const Register = (props) => {
                 <img src={logo} className="logo" alt="Logo" />
                 <h2 className="bank-title" style={{ color: 'var(--primary-color)' }}>Anteater Bank</h2>
             </div>
-            {/* <img src={logo} className="logo" /> */}
-            <form className="register-form" onSubmit={handleSubmit} /*method="post"*/>
+            <form className="register-form" onSubmit={handleSubmit}>
                 <label htmlFor="username">Username</label>
                 <input
-                    value = {username}
+                    value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
                     placeholder="username"
@@ -66,7 +73,7 @@ export const Register = (props) => {
                 />
                 <label htmlFor="password">Password</label>
                 <input
-                    value = {password}
+                    value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     type="password"
                     placeholder="********"
@@ -75,20 +82,20 @@ export const Register = (props) => {
                     name="password"
                     id="password"
                 />
-                <label htmlFor="password">Confirm Password</label>
+                <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
-                    value = {confirmPassword}
+                    value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     type="password"
                     placeholder="********"
                     maxLength="127"
                     className="login__input login__input--password"
-                    name="password"
-                    is="password"
+                    name="confirmPassword"
+                    id="confirmPassword"
                 />
                 <label htmlFor="amount">Initial Amount</label>
                 <input
-                    value = {amount}
+                    value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     type="number"
                     placeholder="0"
