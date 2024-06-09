@@ -13,10 +13,20 @@ import {
 
 const app = express();
 const PORT = 3003;
-const SECRET_KEY = 'secret_key'; 
+const SECRET_KEY = 'secret_key';
 
 app.use(express.json());
 app.use(cors());
+
+const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasDigits = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return password.length >= minLength && hasUpperCase && hasLowerCase && hasDigits && hasSpecialChar;
+};
 
 const generateToken = (user) => {
     return jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
@@ -40,129 +50,165 @@ app.get('/', (req, res) => {
 });
 
 app.get('/accounts', authenticateToken, async (req, res) => {
-    const accounts = await getAccounts();
-    if (accounts == null) {
-        res.status(404).json({ message: 'No accounts found' });
+    try {
+        const accounts = await getAccounts();
+        if (accounts == null) {
+            return res.status(404).json({ message: 'No accounts found' });
+        }
+        res.status(200).json(accounts);
+    } catch (err) {
+        console.error("Error fetching accounts:", err);
+        res.status(500).json({ message: 'Server error' });
     }
-    res.status(200).json(accounts);
 });
 
 app.post('/account', async (req, res) => {
     try {
-        console.log("server /account", req.body);
-        const account = await getAccount(req.body.username);
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username and password are required' });
+        }
+
+        if (!validatePassword(password)) {
+            return res.status(400).json({
+                message: 'Password does not meet the required criteria: \n' +
+                    '1. Minimum Length: At least 8 characters.\n' +
+                    '2. Uppercase Letters: At least one uppercase letter.\n' +
+                    '3. Lowercase Letters: At least one lowercase letter.\n' +
+                    '4. Digits: At least one digit.\n' +
+                    '5. Special Characters: At least one special character (e.g., !@#$%^&*(),.?":{}|<>).'
+            });
+        }
+
+        const account = await getAccount(username);
         if (account == null) {
-            const hashedPwd = await bcrypt.hash(req.body.password, 10);
-            const user = {
-                username: req.body.username,
-                password: hashedPwd,
-            };
-            const newUser = await createAccount(user.username, user.password);
-            console.log("created new user", newUser);
-            res.status(200).json(newUser);
+            const hashedPwd = await bcrypt.hash(password, 10);
+            const newUser = await createAccount(username, hashedPwd);
+            res.status(200).json({ userId: newUser });
         } else {
             res.status(401).json({ message: 'Username already exists!' });
         }
     } catch (err) {
-        console.log("create user failed", err);
-        res.status(500).json(err);
+        console.error("Error creating account:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 app.post('/account/login', async (req, res) => {
-    const user = await getAccount(req.body.username);
-
-    if (user == null) {
-        return res.status(401).json({ message: 'Invalid password or username' });
-    }
-
     try {
-        if (await bcrypt.compare(req.body.password, user.password)) {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ message: 'Username and password are required' });
+        }
+
+        const user = await getAccount(username);
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid password or username' });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (isPasswordValid) {
             const token = generateToken(user);
             res.status(200).json({ message: 'Login successful', token });
         } else {
             res.status(401).json({ message: 'Invalid password or username' });
         }
-    } catch (error) {
-        res.status(500).send();
+    } catch (err) {
+        console.error("Error logging in:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 app.post('/account/transactions', authenticateToken, async (req, res) => {
-    const username = req.body.user;
-    const account = await getAccount(username);
-    if (account == null) res.status(400).json({ message: 'Account does not exist' });
-    const account_id = account.id;
-    const transactions = await getTransactions(account_id);
-    if (transactions == null) res.status(400).json({ message: 'No available transaction' });
-    res.status(200).json(transactions);
+    try {
+        const username = req.body.user;
+        const account = await getAccount(username);
+        if (!account) return res.status(400).json({ message: 'Account does not exist' });
+
+        const transactions = await getTransactions(account.id);
+        if (!transactions) return res.status(400).json({ message: 'No available transactions' });
+
+        res.status(200).json(transactions);
+    } catch (err) {
+        console.error("Error fetching transactions:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 app.post('/account/balance', authenticateToken, async (req, res) => {
-    const username = req.body.user;
-    const account = await getAccount(username);
-    if (account == null) res.status(400).json({ message: 'Account does not exist' });
-    console.log(account);
-    const currBalance = account.balance;
-    res.status(201).json({ message: `Your balance is ${currBalance}`, balance: currBalance });
+    try {
+        const username = req.body.user;
+        const account = await getAccount(username);
+        if (!account) return res.status(400).json({ message: 'Account does not exist' });
+
+        const currBalance = account.balance;
+        res.status(200).json({ message: `Your balance is ${currBalance}`, balance: currBalance });
+    } catch (err) {
+        console.error("Error fetching balance:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 app.post('/account/deposit', authenticateToken, async (req, res) => {
-    console.log("deposit req:", req);
+    try {
+        const { user, amount } = req.body;
 
-    const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
-    const numberInput = req.body.amount;
+        const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
+        const numberInput = amount;
 
-    if (!validNumberFormat.test(numberInput)) {
-        return res.status(400).json({ message: 'Invalid number format' });
+        if (!validNumberFormat.test(numberInput)) {
+            return res.status(400).json({ message: 'Invalid number format' });
+        }
+
+        const account = await getAccount(user);
+        if (!account) return res.status(400).json({ message: 'Account does not exist' });
+
+        const newBalance = account.balance + Number(amount);
+        await updateBalance(user, newBalance);
+        await createTransaction(account.id, Number(amount));
+
+        res.status(201).json({ message: 'Deposit successful' });
+    } catch (err) {
+        console.error("Error processing deposit:", err);
+        res.status(500).json({ message: 'Server error' });
     }
-
-    const username = req.body.user;
-    const amount = Number(numberInput);
-    const account = await getAccount(username);
-    if (account == null) res.status(400).json({ message: 'Account does not exist' });
-    console.log("account: ", account);
-
-    const account_id = account.id;
-    const oldBalance = Number(account.balance);
-    const newBalance = oldBalance + amount;
-
-    await updateBalance(username, newBalance);
-
-    await createTransaction(account_id, amount);
-    res.status(201).json({ message: 'Deposit successful' });
 });
 
 app.post('/account/withdraw', authenticateToken, async (req, res) => {
-    const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
-    const numberInput = req.body.amount;
+    try {
+        const { user, amount } = req.body;
 
-    if (!validNumberFormat.test(numberInput)) {
-        return res.status(400).json({ message: 'Invalid number format' });
-    }
+        const validNumberFormat = /^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$/;
+        const numberInput = amount;
 
-    const username = req.body.user;
-    const amount = Number(numberInput);
-    const account = await getAccount(username);
-    if (account == null) res.status(400).json({ message: 'Account does not exist' });
+        if (!validNumberFormat.test(numberInput)) {
+            return res.status(400).json({ message: 'Invalid number format' });
+        }
 
-    const account_id = account.id;
-    const oldBalance = Number(account.balance);
-    const newBalance = oldBalance - amount;
+        const account = await getAccount(user);
+        if (!account) return res.status(400).json({ message: 'Account does not exist' });
 
-    if (newBalance < 0) {
-        res.status(400).json({ message: 'Insufficient funds' });
-    } else {
-        await updateBalance(username, newBalance);
+        const newBalance = account.balance - Number(amount);
+        if (newBalance < 0) {
+            return res.status(400).json({ message: 'Insufficient funds' });
+        }
 
-        await createTransaction(account_id, -amount);
+        await updateBalance(user, newBalance);
+        await createTransaction(account.id, -Number(amount));
+
         res.status(201).json({ message: 'Withdraw successful' });
+    } catch (err) {
+        console.error("Error processing withdrawal:", err);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
-app.use((err, req, res) => {
-    console.log(err.stack);
-    res.status(500).json({ message: err.message });
+// Error handling middleware for unexpected errors
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Server error' });
 });
 
 app.listen(PORT, () => {
