@@ -8,6 +8,7 @@ export const Login = (props) => {
     const [password, setPassword] = useState("");
     const [authenticated, setAuthenticated] = useState(localStorage.getItem(localStorage.getItem("authenticated")|| false));
     const navigate = useNavigate();
+    const max_attempts = 3;
 
     const validateInput = (string) => {
         return /^[\w\-.]{1,127}$/.test(string);
@@ -21,6 +22,12 @@ export const Login = (props) => {
             return;
         }
 
+        let attempts = parseInt(localStorage.getItem("loginAttempts")) || 0;
+        if (attempts >= max_attempts) {
+            alert("You have exceeded the maximum number of login attempts. Please try again later.");
+            return;
+        }
+
         Axios.post("http://localhost:3003/account/login", {
             "username": username,
             "password": password
@@ -28,11 +35,18 @@ export const Login = (props) => {
             const token = res.data.token;
             setAuthenticated(true)
             localStorage.setItem("authenticated", true);
-            localStorage.setItem("token", token); 
+            localStorage.setItem("token", token);
+            localStorage.setItem("loginAttempts", 0);
             navigate("/dashboard", {"state": {"username": username}});
         }).catch((e) => {
             if(e.response.status === 401){
+                attempts += 1
+                localStorage.setItem('loginAttempts', attempts);
                 alert(e.response.data.message);
+                alert(`Login failed. You have ${max_attempts - attempts} attempts left.`);
+                if (attempts >= max_attempts) {
+                    alert("You have exceeded the maximum number of login attempts. Please try again later.");
+                }
                 console.log(e.response.data);
             }
         })
