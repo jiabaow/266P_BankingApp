@@ -1,14 +1,23 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
-import { createAccount, getAccounts, getAccount, getTransactions, updateBalance, createTransaction } from './database.js';
 import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import {
+    createAccount,
+    getAccounts,
+    getAccount,
+    getTransactions,
+    updateBalance,
+    createTransaction
+} from './database.js';
 
 const app = express();
+const PORT = 3003;
+const SECRET_KEY = 'secret_key'; 
 
 app.use(express.json());
 app.use(cors());
 
-// Password validation function
 const validatePassword = (password) => {
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -19,12 +28,28 @@ const validatePassword = (password) => {
     return password.length >= minLength && hasUpperCase && hasLowerCase && hasDigits && hasSpecialChar;
 };
 
+const generateToken = (user) => {
+    return jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+};
+
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) return res.sendStatus(401);
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+};
+
 app.get('/', (req, res) => {
     res.send('Send homepage');
 });
 
-// gets all the accounts
-app.get('/accounts', async (req, res) => {
+app.get('/accounts', authenticateToken, async (req, res) => {
     try {
         const accounts = await getAccounts();
         if (accounts == null) {
@@ -45,20 +70,20 @@ app.post('/account', async (req, res) => {
             return res.status(400).json({ message: 'Username and password are required' });
         }
 
-        // Validate password strength
         if (!validatePassword(password)) {
             return res.status(400).json({ message: 'Password does not meet the required criteria: \n' + '1. Minimum Length: At least 8 characters.\n' +
                     '2. Uppercase Letters: At least one uppercase letter.\n' +
                     '3. Lowercase Letters: At least one lowercase letter.\n' +
                     '4. Digits: At least one digit.\n' +
-                    '5. Special Characters: At least one special character (e.g., !@#$%^&*(),.?":{}|<>).)' });
+                    '5. Special Characters: At least one special character (e.g., !@#$%^&*(),.?":{}|<>).' });
         }
 
         const account = await getAccount(username);
         if (account == null) {
             const hashedPwd = await bcrypt.hash(password, 10);
             const newUser = await createAccount(username, hashedPwd);
-            res.status(200).json({ userId: newUser });
+            const token = generateToken({ username });
+            res.status(200).json({ userId: newUser, token });
         } else {
             res.status(401).json({ message: 'Username already exists!' });
         }
@@ -83,7 +108,8 @@ app.post('/account/login', async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (isPasswordValid) {
-            res.status(200).json({ message: 'Login successful', expires_in: 300 });
+            const token = generateToken(user);
+            res.status(200).json({ message: 'Login successful', token });
         } else {
             res.status(401).json({ message: 'Invalid password or username' });
         }
@@ -93,7 +119,7 @@ app.post('/account/login', async (req, res) => {
     }
 });
 
-app.post('/account/transactions', async (req, res) => {
+app.post('/account/transactions', authenticateToken, async (req, res) => {
     try {
         const username = req.body.user;
         const account = await getAccount(username);
@@ -109,21 +135,21 @@ app.post('/account/transactions', async (req, res) => {
     }
 });
 
-app.post('/account/balance', async (req, res) => {
+app.post('/account/balance', authenticateToken, async (req, res) => {
     try {
         const username = req.body.user;
         const account = await getAccount(username);
         if (!account) return res.status(400).json({ message: 'Account does not exist' });
 
         const currBalance = account.balance;
-        res.status(200).json({ message: `Your balance is ${currBalance}`, balance: currBalance });
+        res.status(201).json({ message: `Your balance is ${currBalance}`, balance: currBalance });
     } catch (err) {
         console.error("Error fetching balance:", err);  // Error handling added
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-app.post('/account/deposit', async (req, res) => {
+app.post('/account/deposit', authenticateToken, async (req, res) => {
     try {
         const { user, amount } = req.body;
 
@@ -141,14 +167,14 @@ app.post('/account/deposit', async (req, res) => {
         await updateBalance(user, newBalance);
         await createTransaction(account.id, Number(amount));
 
-        res.status(201).json({ message: 'Deposit successful' });
+        res.status 201).json({ message: 'Deposit successful' });
     } catch (err) {
         console.error("Error processing deposit:", err);  // Error handling added
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-app.post('/account/withdraw', async (req, res) => {
+app.post('/account/withdraw', authenticateToken, async (req, res) => {
     try {
         const { user, amount } = req.body;
 
@@ -178,11 +204,11 @@ app.post('/account/withdraw', async (req, res) => {
 });
 
 // Error handling middleware for unexpected errors
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Server error' });
 });
 
-app.listen(3003, () => {
-    console.log("Server running on port 3003");
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
