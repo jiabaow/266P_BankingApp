@@ -13,7 +13,7 @@ import {
 
 const app = express();
 const PORT = 3003;
-const SECRET_KEY = 'secret_key'; 
+const SECRET_KEY = 'secret_key';
 
 app.use(express.json());
 app.use(cors());
@@ -57,7 +57,7 @@ app.get('/accounts', authenticateToken, async (req, res) => {
         }
         res.status(200).json(accounts);
     } catch (err) {
-        console.error("Error fetching accounts:", err);  // Error handling added
+        console.error("Error fetching accounts:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -71,24 +71,26 @@ app.post('/account', async (req, res) => {
         }
 
         if (!validatePassword(password)) {
-            return res.status(400).json({ message: 'Password does not meet the required criteria: \n' + '1. Minimum Length: At least 8 characters.\n' +
+            return res.status(400).json({
+                message: 'Password does not meet the required criteria: \n' +
+                    '1. Minimum Length: At least 8 characters.\n' +
                     '2. Uppercase Letters: At least one uppercase letter.\n' +
                     '3. Lowercase Letters: At least one lowercase letter.\n' +
                     '4. Digits: At least one digit.\n' +
-                    '5. Special Characters: At least one special character (e.g., !@#$%^&*(),.?":{}|<>).' });
+                    '5. Special Characters: At least one special character (e.g., !@#$%^&*(),.?":{}|<>).'
+            });
         }
 
         const account = await getAccount(username);
         if (account == null) {
             const hashedPwd = await bcrypt.hash(password, 10);
             const newUser = await createAccount(username, hashedPwd);
-            const token = generateToken({ username });
-            res.status(200).json({ userId: newUser, token });
+            res.status(200).json({ userId: newUser });
         } else {
             res.status(401).json({ message: 'Username already exists!' });
         }
     } catch (err) {
-        console.error("Error creating account:", err);  // Error handling added
+        console.error("Error creating account:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -114,7 +116,7 @@ app.post('/account/login', async (req, res) => {
             res.status(401).json({ message: 'Invalid password or username' });
         }
     } catch (err) {
-        console.error("Error logging in:", err);  // Error handling added
+        console.error("Error logging in:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -130,7 +132,7 @@ app.post('/account/transactions', authenticateToken, async (req, res) => {
 
         res.status(200).json(transactions);
     } catch (err) {
-        console.error("Error fetching transactions:", err);  // Error handling added
+        console.error("Error fetching transactions:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -142,9 +144,9 @@ app.post('/account/balance', authenticateToken, async (req, res) => {
         if (!account) return res.status(400).json({ message: 'Account does not exist' });
 
         const currBalance = account.balance;
-        res.status(201).json({ message: `Your balance is ${currBalance}`, balance: currBalance });
+        res.status(200).json({ message: `Your balance is ${currBalance}`, balance: currBalance });
     } catch (err) {
-        console.error("Error fetching balance:", err);  // Error handling added
+        console.error("Error fetching balance:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -167,9 +169,9 @@ app.post('/account/deposit', authenticateToken, async (req, res) => {
         await updateBalance(user, newBalance);
         await createTransaction(account.id, Number(amount));
 
-        res.status 201).json({ message: 'Deposit successful' });
+        res.status(201).json({ message: 'Deposit successful' });
     } catch (err) {
-        console.error("Error processing deposit:", err);  // Error handling added
+        console.error("Error processing deposit:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -198,13 +200,13 @@ app.post('/account/withdraw', authenticateToken, async (req, res) => {
 
         res.status(201).json({ message: 'Withdraw successful' });
     } catch (err) {
-        console.error("Error processing withdrawal:", err);  // Error handling added
+        console.error("Error processing withdrawal:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
 // Error handling middleware for unexpected errors
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Server error' });
 });
@@ -212,3 +214,4 @@ app.use((err, req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
